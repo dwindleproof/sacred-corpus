@@ -6,3 +6,8 @@ This project is in no way associated with [The Church of Jesus Christ of Latter-
 I am not your lawyer. I am not *_**A**_* lawyer. The legal distribution of copyrighted material requires ownership of the copyright or permission from the copyright owner. This code does not distribute copyrighted material. Instead this code gathers a corpus from public websites maintained by the copyright owners. This code may be rendered ineffective at any time if the copyright owners no longer make the material publically available. This code is freely available under an open source license allowing anyone to gather their own corpus but does not make subsequent distribution of such a corpus legal.
 
 For more information on legality, please see [this copyright discussion](https://www.lds-general-conference.org/help/copyright.asp) created for a similar corpus which can be used in a limited, legal manner [through this website](https://www.lds-general-conference.org/). I am not a lawyer. I am not your lawyer.
+
+# Installation
+This repository uses Python 3.8. After downloading the repository install a Python environment using your preferred environment engine, for example:
+* pipenv install -r requirements.txt 
+* pip install -r requirements.txt
