@@ -139,7 +139,7 @@ pgp = {
     'a-of-f'      : {'Articles of Faith'                          :  1  },
 }
 
-standard_works = {
+standard_works_structure = {
     'Old Testament'         : {'ot'          : ot  },
     'New Testament'         : {'nt'          : nt  },
     'Book of Mormon'        : {'bofm'        : bofm},
@@ -229,7 +229,7 @@ def process_chapter(page):
     
     return chapter
 
-def standard_work_urls(structure, top=True):
+def standard_works_urls(structure, top=True):
     "Generator consumes nested dicts ending on None/int indicating URL at churchofjesuschrist.org"
         
     for key, value in structure.items():
@@ -241,7 +241,7 @@ def standard_work_urls(structure, top=True):
                 yield str(i), [key, i]
         
         elif isinstance(value, dict): # Substructure
-            for result in standard_work_urls(value, top=False):
+            for result in standard_works_urls(value, top=False):
                 
                 if result[0] is None: # URL is prepared
                     url = f"{standard_works_base_url}" if top else f"{key}"
@@ -252,7 +252,7 @@ def standard_work_urls(structure, top=True):
                 
                 yield url, keys            
 
-def standard_work_generation(urls):
+def standard_works_generation(urls):
     "Builds XMl corpus from urls and construction tags taken from standard_work_urls"
     
     # Root element of corpus
@@ -284,7 +284,7 @@ def standard_work_generation(urls):
         return corpus
     
     # TODO: multithreaded pool
-    for url, tags in list(urls)[:10]:
+    for url, tags in list(urls):
         corpus = add(
             process_chapter(get(url)),
             tags,
@@ -294,3 +294,9 @@ def standard_work_generation(urls):
     # TODO: this has to be tested for the entire corpus, with verification on quality
     return corpus
 
+def standard_works(number=None):
+    if number is None:
+        return standard_works_generation(standard_works_urls(standard_works_structure))
+    
+    else:
+        return standard_works_generation(list(standard_works_urls(standard_works_structure))[:number])
