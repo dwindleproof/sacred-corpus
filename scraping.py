@@ -1,4 +1,5 @@
 import requests
+from multiprocessing import Pool
 
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString as n_str
@@ -148,15 +149,23 @@ standard_works_structure = {
 }
 
 #################################################################################
-# Scraping Functions
+# Fundamental HTTP Request Functions
 #################################################################################
-# Utility scraping methods
+
+headers = { # Politely declares scraping source for raising issues with ToS etc.
+    'User-Agent': 'github.com/dwindleproof/sacred-corpus',
+}
+
 def get(url):
-    page = requests.get(url)
+    page = requests.get(url, headers=headers)
     if page.status_code == 200:
         return BeautifulSoup(page.text, 'html.parser')
     
     raise ValueError(f"Failed to get {url}")
+
+#################################################################################
+# Serial Access Functions (Outdated, will remove)
+#################################################################################
 
 # TODO: remove these serial methods as superfluous, prefering the structured method
 def get_first_from_standard_work(standard_work):
@@ -190,6 +199,9 @@ def get_all_standard_work_pages(url, verbose=False):
         else:
             url = None
 
+#################################################################################
+# Scraping Functions
+#################################################################################
 
 def process_raw_web_string(s):
     "Processes raw unicode strings from curchofjesuschrist.org"
@@ -208,26 +220,38 @@ def process_verse(verse):
     
     return ''.join([trim_sups(c) for c in verse.contents[1:]])
 
-def process_chapter(page):
+def process_chapter(page, source, tags):
     "Processes a chapter from a standard work, given a page from churchofjesuschrist.org"
-    chapter = etree.Element('chapter')
+    name = "/".join([str(s) for s in tags])
+    chapter = etree.Element('chapter', name=name, source=source)
     
     # Titles for chapters are later relagated to XML functions
     # chapter.text = process_raw_web_string(page.find('p', **{'id': 'title_number1'}).text)
+    try:
+        summary = etree.Element('summary')
+        if len(summary):
+            summary.text = process_raw_web_string(page.find('p', **{'id': 'study_summary1'}).text)
+        chapter.append(summary)
 
-    summary = etree.Element('summary')
-    if len(summary):
-        summary.text = process_raw_web_string(page.find('p', **{'id': 'study_summary1'}).text)
-    chapter.append(summary)
+        body = page.find('div', **{'class': 'body-block'})
 
-    body = page.find('div', **{'class': 'body-block'})
-
-    for verse in body.find_all('p'):
-        new = etree.Element('verse', number=verse['id'][1:])
-        new.text = process_verse(verse)
+        for verse in body.find_all('p'):
+            new = etree.Element('verse', number=verse['id'][1:])
+            new.text = process_verse(verse)
+            chapter.append(new)
+    except AttributeError as e:
+        new = etree.Element(
+            'verse',
+            number=str(
+                len(
+                    chapter.xpath('//verse')
+                )+1
+            )
+        )
+        new.text = f"&&& Encountered error: {e} &&&"
         chapter.append(new)
     
-    return chapter
+    return etree.tostring(chapter), tags
 
 def standard_works_urls(structure, top=True):
     "Generator consumes nested dicts ending on None/int indicating URL at churchofjesuschrist.org"
@@ -273,9 +297,6 @@ def standard_works_generation(urls):
                 etree.Element('book', name=tags[1])
             )
         
-        # The last tag is used as a chapter name
-        chapter.attrib['name'] = str(tags[-1])
-        
         # The chapter is appended, and the corpus returned
         corpus.xpath(f'/corpus/collection[@name="{tags[0]}"]/book[@name="{tags[1]}"]')[0].append(
             chapter
@@ -294,9 +315,65 @@ def standard_works_generation(urls):
     # TODO: this has to be tested for the entire corpus, with verification on quality
     return corpus
 
+
+def standard_works_generation(urls, processes=10):
+    "Builds XMl corpus from urls and construction tags taken from standard_work_urls, multithreaded"
+    
+    # Root element of corpus
+    corpus = etree.Element('corpus')
+    
+    def add(chapter, tags, corpus):
+        "Adds a chapter with given tags to the corpus"
+        
+        # Collection is created if not already extant
+        if not corpus.xpath(f'/corpus/collection[@name="{tags[0]}"]'):
+            corpus.append(
+                etree.Element('collection', name=tags[0])
+            )
+        
+        # Book is created if not already extant
+        if not corpus.xpath(f'/corpus/collection[@name="{tags[0]}"]/book[@name="{tags[1]}"]'):            
+            corpus.xpath(f'/corpus/collection[@name="{tags[0]}"]')[0].append(
+                etree.Element('book', name=tags[1])
+            )
+        
+        # The last tag is used as a chapter name
+        chapter.attrib['name'] = str(tags[-1])
+        
+        # The chapter is appended, and the corpus returned
+        corpus.xpath(f'/corpus/collection[@name="{tags[0]}"]/book[@name="{tags[1]}"]')[0].append(
+            chapter
+        )
+        
+        return corpus
+    
+    def process(args):
+        url, tags = args
+        return process_chapter(get(url)), tags
+    
+    with Pool(processes) as p: # Chapters are pulled in parallel
+        results = p.map(
+            process,
+            urls,
+        )
+    
+    for chapter, tags in results:
+        corpus = add(chapter, tags, corpus)
+    
+    return corpus
+
 def standard_works(number=None):
     if number is None:
         return standard_works_generation(standard_works_urls(standard_works_structure))
     
     else:
-        return standard_works_generation(list(standard_works_urls(standard_works_structure))[:number])
+        return list(
+            standard_works_generation(
+                list(
+                    standard_works_urls(
+                        standard_works_structure
+                    )
+                )[:number]
+            )
+        )
+    
