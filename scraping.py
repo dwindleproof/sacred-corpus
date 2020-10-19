@@ -23,7 +23,20 @@ replacements = {
     'â\x80\x94'         : ' - ' , # Long m dash
     'â\x80\x99'         : "'"   , # Apostrophe : ’
     'Â¶ '               : ''    , # Paragraph mark : ¶
+    'Ã¦'                : 'ae'  , # Diphthong ae: æ
+    'Ã'                : 'Ae'  , # Capitalized Ae: Æ
+    'Â\xa0'             : ' '   , # Link artifact in D&C introduction TODO: understand better
+    'â\x80\x9c'         : '"'   , # Opening double quote: “
+    'â\x80\x9d'         : '"'   , # Closing double quote: ”
+    'â\x80¦'            : '...' , # Elipsis: …
+    'â\x80\x93'         : '-'   , # Dash for scripture references: –
+    'â\x80\x98'         : "'"   , # Opening single quote: ‘
 }
+
+# TODO: Error in parsing https://www.churchofjesuschrist.org/study/scriptures/bofm/introduction
+# TODO: Error in parsing https://www.churchofjesuschrist.org/study/scriptures/bofm/explanation
+# TODO: Number for verse 14 included in text? https://www.churchofjesuschrist.org/study/scriptures/pgp/js-h/1
+
 
 # Standard Works Nested Structure
 ot = {
@@ -80,7 +93,7 @@ nt = {
     '2-cor'      : {'2 Corinthians'     : 13  },
     'gal'        : {'Galatians'         :  6  },
     'eph'        : {'Ephesians'         :  6  },
-    'philip'     : {'Philippians'       :  6  },
+    'philip'     : {'Philippians'       :  4  },
     'col'        : {'Colossians'        :  4  },
     '1-thes'     : {'1 Thessalonians'   :  5  },
     '2-thes'     : {'2 Thessalonians'   :  3  },
@@ -377,3 +390,18 @@ def standard_works(number=None):
             )
         )
     
+#################################################################################
+# XML Processing Functions
+#################################################################################
+def flatten(xml):
+    "Iteratively Renders XML as a unicode string"
+    if isinstance(xml, bytes):
+        return to_string(etree.fromstring(xml))
+    
+    return (
+        xml.text if xml.text is not None else ''
+    ) + ' '.join([
+        flatten(x)
+        for x in xml
+        if isinstance(x, etree._Element)
+    ])
