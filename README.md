@@ -5,11 +5,11 @@ This project is in no way associated with [The Church of Jesus Christ of Latter-
 
 I am not your lawyer. I am not *_**A**_* lawyer.
 
-The legal distribution of copyrighted material requires ownership of the copyright or permission from the copyright owner. This code _does not distribute copyrighted material_. Instead, this code gathers for personal use a corpus from public websites maintained by the copyright owners. This code may be rendered ineffective at any time if the copyright owners no longer make the material publically available for personal use. This code is freely available under an open source license allowing anyone to gather their own corpus, but does not make subsequent distribution of such a corpus legal.
+The legal distribution of copyrighted material requires ownership of the copyright or permission from the copyright owner. This code _does not distribute copyrighted material_. Instead, this code gathers for personal use a corpus from public websites maintained by the copyright owners. This code may be rendered ineffective at any time if the copyright owners no longer make the material publically available for personal use. This code is freely available under an open source license allowing anyone to gather their own corpus, but does not make subsequent redistribution of such a corpus legal.
 
 For more information on legality, please see [this copyright discussion](https://www.lds-general-conference.org/help/copyright.asp) created for a similar corpus which can be used in a limited, legal manner [through this website](https://www.lds-general-conference.org/).
 
-This software 'scrapes' websites to make the corpus, meaning it visits website and takes the words and structure for the corpus. To the degree these website make explicit requests about how this scraping should be done politely, these requests are followed and any failure to comply should be raised as an issue on Github.
+This software 'scrapes' websites to make the corpus, meaning it visits websites and takes the words and structure for the corpus. To the degree these websites make explicit requests about how polite scraping should be accomplished, these requests are followed and any failure to comply should be raised as an issue on Github.
 
 Websites for scraping and use policies:
     [churchofjesuschrist.org Terms of Use](https://www.churchofjesuschrist.org/legal/terms-of-use)
