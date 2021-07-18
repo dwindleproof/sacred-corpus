@@ -24,7 +24,7 @@ def get(url):
     raise ValueError(f"Failed to get {url}")
 
 #################################################################################
-# Fundamental HTTP Request Functions
+#  Corpus Construction Functions
 #################################################################################
 # String used for failures in scraping
 error_string = """<chapter name='{}'><verse name='1'>
@@ -65,7 +65,7 @@ def add(chapter, tags, corpus):
     )
 
     return corpus
-    
+
 def standard_works(corpus = None, size=50):
     "Multithreading generator "
     if corpus is None:
